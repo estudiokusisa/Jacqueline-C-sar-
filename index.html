@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jacqueline & César - Nuestro matrimonio</title>
+
+<!-- FAVICON -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Si tu favicon es formato .ico, usa: <link rel="icon" href="favicon.ico" type="image/x-icon"> -->
+
+    <meta property="og:title" content="Jacqueline & César - Nuestro matrimonio">
+    <meta property="og:description" content="Toca aqui para acceder">
+    <meta property="og:image" content="https://jacqueline-cesar.netlify.app/miniatura.jpg">
+    <meta property="og:url" content="https://jacqueline-cesar.netlify.app/">
+    <meta property="og:type" content="website">
+
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body, html {
+            width: 100%; 
+            min-height: 100%;
+            font-family: 'Cormorant Garamond', serif;
+            background-color: #dbe2e8;
+            background-image: url('fondoPatron.png');
+            background-repeat: no repeat;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .invitation-container {
+            width: 100%; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px 15px;
+        }
+
+        .envelope-box {
+            width: 100%; 
+            max-width: 360px;
+            margin-bottom: 20px;
+            animation: fallFromTop 1.2s ease-out forwards;
+        }
+
+        .envelope-box img { width: 100%; height: auto; display: block; filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.12)); }
+
+        .content-box {
+            display: flex; flex-direction: column; align-items: center;
+            width: 100%; max-width: 340px; 
+            animation: riseFromBottom 1.2s ease-out forwards;
+        }
+
+        .guest-info {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 22px 20px; border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+            width: 100%; border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+
+        .welcome-text { font-size: 1.1rem; color: #555e6d; font-style: italic; margin-bottom: 6px; }
+        .guest-name {
+            font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600;
+            color: #3b4a5a; margin-bottom: 10px; font-style: italic;
+            display: inline-block; border-bottom: 1px solid #7c8d9e;
+            padding-bottom: 2px; padding-left: 8px; padding-right: 8px;
+            max-width: 100%; word-break: break-word;
+        }
+        .passes-container { font-size: 1.05rem; color: #555e6d; font-style: italic; margin-bottom: 18px; }
+        .passes-number { font-weight: 600; color: #3b4a5a; }
+
+        .btn-acceder {
+            display: inline-block; background-color: #728494;
+            color: #ffffff; text-decoration: none; padding: 10px 24px;
+            border-radius: 50px; font-size: 0.9rem; letter-spacing: 1.5px;
+            text-transform: uppercase; transition: background-color 0.3s;
+        }
+        .btn-acceder:hover { background-color: #5c6c7b; }
+
+        @keyframes fallFromTop {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes riseFromBottom {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 480px) {
+            .envelope-box {
+                max-width: 380px !important;
+                margin-bottom: 25px !important; 
+            }
+            .content-box {
+                max-width: 330px !important; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invitation-container">
+        <div class="envelope-box">
+            <img src="sobre.png" alt="Sobre Jacqueline & César">
+        </div>
+        <div class="content-box">
+            <div class="guest-info">
+                <p class="welcome-text">Con especial afecto para:</p>
+                <h1 class="guest-name" id="nombreInvitado">Cargando...</h1>
+                <div class="passes-container">
+                    Pases reservados: <span class="passes-number" id="numeroPases">-</span>
+                </div>
+                <a href="https://kusisainvitaciones.com/jacqueline-y-cesar-" class="btn-acceder">VER DETALLES</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function consultarGoogleSheets() {
+            const params = new URLSearchParams(window.location.search);
+            const idParam = params.get('id'); // CAMBIADO DE 'fila' A 'id'
+            
+            // URL limpia y directa hacia tu Google Apps Script oficial
+            const urlAppsScript = "https://script.google.com/macros/s/AKfycbwLIbm5786MXIblgX7dqpg2vwsRS6RiZFL3CkzURwaz_caSa5j-z0T3GN3vgcDB1eUb/exec";
+
+            if (!idParam) {
+                document.getElementById('nombreInvitado').textContent = "Nombre del invitado";
+                document.getElementById('numeroPases').textContent = "2";
+                return;
+            }
+
+            try {
+                const response = await fetch(`${urlAppsScript}?id=${encodeURIComponent(idParam)}`); // CAMBIADO A ?id=
+                const data = await response.json();
+                document.getElementById('nombreInvitado').textContent = data.nombre || "Estimado Invitado";
+                document.getElementById('numeroPases').textContent = data.pases || "2";
+            } catch (error) {
+                document.getElementById('nombreInvitado').textContent = "Estimado Invitado";
+                document.getElementById('numeroPases').textContent = "2";
+            }
+        }
+        window.onload = consultarGoogleSheets;
+    </script>
+</body>
+</html>
