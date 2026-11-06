@@ -67,13 +67,14 @@
         .welcome-text { font-size: 1.1rem; color: #555e6d; font-style: italic; margin-bottom: 6px; }
         .guest-name {
             font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600;
-            color: #3b4a5a; margin-bottom: 10px; font-style: italic;
+            color: #3b4a5a; margin-bottom: 18px; font-style: italic;
             display: inline-block; border-bottom: 1px solid #7c8d9e;
             padding-bottom: 2px; padding-left: 8px; padding-right: 8px;
             max-width: 100%; word-break: break-word;
         }
-        .passes-container { font-size: 1.05rem; color: #555e6d; font-style: italic; margin-bottom: 18px; }
-        .passes-number { font-weight: 600; color: #3b4a5a; }
+        .passes-container { font-size: 1.05rem; color: #555e6d; font-style: italic; margin-top: -6px; margin-bottom: 18px; }
+        .passes-label { display: block; }
+        .passes-number { display: block; font-weight: 600; color: #3b4a5a; font-size: 1.15rem; }
 
         .btn-acceder {
             display: inline-block; background-color: #728494;
@@ -113,8 +114,10 @@
             <div class="guest-info">
                 <p class="welcome-text">Con especial afecto para:</p>
                 <h1 class="guest-name" id="nombreInvitado">Cargando...</h1>
-                <div class="passes-container">
-                    Pases reservados: <span class="passes-number" id="numeroPases">-</span>
+                <!-- Se muestra solo si hay pases adicionales (mayor a 0) -->
+                <div class="passes-container" id="contenedorPases" style="display:none;">
+                    <span class="passes-label" id="etiquetaPases">Pases adicionales</span>
+                    <span class="passes-number" id="numeroPases"></span>
                 </div>
                 <a href="https://kusisainvitaciones.com/jacqueline-y-cesar-" class="btn-acceder">VER DETALLES</a>
             </div>
@@ -122,27 +125,47 @@
     </div>
 
     <script>
+        const PALABRAS_PASES = {
+            1: "Un pase", 2: "Dos pases", 3: "Tres pases", 4: "Cuatro pases", 5: "Cinco pases",
+            6: "Seis pases", 7: "Siete pases", 8: "Ocho pases", 9: "Nueve pases", 10: "Diez pases"
+        };
+
+        function mostrarPases(valor) {
+            const n = parseInt(valor, 10);
+            const contenedor = document.getElementById('contenedorPases');
+
+            // Si es 0, vacío o no es número: no se muestra nada
+            if (isNaN(n) || n <= 0) {
+                contenedor.style.display = 'none';
+                return;
+            }
+
+            document.getElementById('etiquetaPases').textContent = (n === 1) ? "Pase adicional" : "Pases adicionales";
+            document.getElementById('numeroPases').textContent = n + (n === 1 ? " pase" : " pases");
+            contenedor.style.display = 'block';
+        }
+
         async function consultarGoogleSheets() {
             const params = new URLSearchParams(window.location.search);
-            const idParam = params.get('id'); // CAMBIADO DE 'fila' A 'id'
+            const idParam = params.get('id');
             
-            // URL limpia y directa hacia tu Google Apps Script oficial
             const urlAppsScript = "https://script.google.com/macros/s/AKfycbwLIbm5786MXIblgX7dqpg2vwsRS6RiZFL3CkzURwaz_caSa5j-z0T3GN3vgcDB1eUb/exec";
 
+            // Sin ID (vista previa): se muestra un ejemplo
             if (!idParam) {
                 document.getElementById('nombreInvitado').textContent = "Nombre del invitado";
-                document.getElementById('numeroPases').textContent = "2";
+                mostrarPases(2);
                 return;
             }
 
             try {
-                const response = await fetch(`${urlAppsScript}?id=${encodeURIComponent(idParam)}`); // CAMBIADO A ?id=
+                const response = await fetch(`${urlAppsScript}?id=${encodeURIComponent(idParam)}`);
                 const data = await response.json();
                 document.getElementById('nombreInvitado').textContent = data.nombre || "Estimado Invitado";
-                document.getElementById('numeroPases').textContent = data.pases || "2";
+                mostrarPases(data.pases);
             } catch (error) {
                 document.getElementById('nombreInvitado').textContent = "Estimado Invitado";
-                document.getElementById('numeroPases').textContent = "2";
+                mostrarPases(0); // si falla la consulta, no se promete ningún pase
             }
         }
         window.onload = consultarGoogleSheets;
