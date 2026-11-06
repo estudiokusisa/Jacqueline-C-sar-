@@ -46,16 +46,18 @@
             width: 100%; 
             max-width: 360px;
             margin-bottom: 20px;
-            animation: fallFromTop 1.2s ease-out forwards;
+            opacity: 0;
         }
+        .listo .envelope-box { animation: fallFromTop 1.2s ease-out forwards; }
 
         .envelope-box img { width: 100%; height: auto; display: block; filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.12)); }
 
         .content-box {
             display: flex; flex-direction: column; align-items: center;
-            width: 100%; max-width: 340px; 
-            animation: riseFromBottom 1.2s ease-out forwards;
+            width: 100%; max-width: 340px;
+            opacity: 0;
         }
+        .listo .content-box { animation: riseFromBottom 1.2s ease-out forwards; }
 
         .guest-info {
             background-color: rgba(255, 255, 255, 0.95);
@@ -145,7 +147,31 @@
             contenedor.style.display = 'block';
         }
 
+        // Muestra todo junto (con la animación) solo cuando ya están los datos y el sobre
+        let yaRevelado = false;
+        function revelar() {
+            if (yaRevelado) return;
+            yaRevelado = true;
+            document.body.classList.add('listo');
+        }
+        function esperarSobre() {
+            return new Promise(resolve => {
+                const img = document.querySelector('.envelope-box img');
+                if (img.complete) return resolve();
+                img.addEventListener('load', resolve);
+                img.addEventListener('error', resolve);
+            });
+        }
+        // Por seguridad: si algo tarda demasiado, se muestra igual
+        setTimeout(revelar, 6000);
+
         async function consultarGoogleSheets() {
+            await cargarDatos();
+            await esperarSobre();
+            revelar();
+        }
+
+        async function cargarDatos() {
             const params = new URLSearchParams(window.location.search);
             const idParam = params.get('id');
             
