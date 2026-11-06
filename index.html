@@ -69,11 +69,12 @@
         .welcome-text { font-size: 1.1rem; color: #555e6d; font-style: italic; margin-bottom: 6px; }
         .guest-name {
             font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600;
-            color: #3b4a5a; margin-bottom: 18px; font-style: italic;
+            color: #3b4a5a; margin-bottom: 0; font-style: italic;
             display: inline-block; border-bottom: 1px solid #7c8d9e;
             padding-bottom: 2px; padding-left: 8px; padding-right: 8px;
             max-width: 100%; word-break: break-word;
         }
+        .name-wrap { margin-bottom: 18px; text-align: center; }
         .passes-container { font-size: 1.05rem; color: #555e6d; font-style: italic; margin-top: -6px; margin-bottom: 18px; }
         .passes-label { display: block; }
         .passes-number { display: block; font-weight: 600; color: #3b4a5a; font-size: 1.15rem; }
@@ -115,11 +116,11 @@
         <div class="content-box">
             <div class="guest-info">
                 <p class="welcome-text">Con especial afecto para:</p>
-                <h1 class="guest-name" id="nombreInvitado">Cargando...</h1>
-                <!-- Se muestra solo si hay pases adicionales (mayor a 0) -->
-                <div class="passes-container" id="contenedorPases" style="display:none;">
+                <div class="name-wrap"><h1 class="guest-name" id="nombreInvitado">Cargando...</h1></div>
+                <!-- Mientras carga, reserva el espacio (invisible). Si hay pases adicionales (mayor a 0) se muestra; si es 0 se quita -->
+                <div class="passes-container" id="contenedorPases" style="visibility:hidden;">
                     <span class="passes-label" id="etiquetaPases">Pases adicionales</span>
-                    <span class="passes-number" id="numeroPases"></span>
+                    <span class="passes-number" id="numeroPases">2 pases</span>
                 </div>
                 <a href="https://kusisainvitaciones.com/jacqueline-y-cesar-" class="btn-acceder">VER DETALLES</a>
             </div>
@@ -145,6 +146,7 @@
             document.getElementById('etiquetaPases').textContent = (n === 1) ? "Pase adicional" : "Pases adicionales";
             document.getElementById('numeroPases').textContent = n + (n === 1 ? " pase" : " pases");
             contenedor.style.display = 'block';
+            contenedor.style.visibility = 'visible';
         }
 
         // Muestra todo junto (con la animación) solo cuando ya están los datos y el sobre
@@ -166,9 +168,10 @@
         setTimeout(revelar, 6000);
 
         async function consultarGoogleSheets() {
+            // El sobre y el cuadro blanco salen en cuanto carga el sobre,
+            // sin esperar a Google; el nombre y los pases se llenan después.
+            esperarSobre().then(revelar);
             await cargarDatos();
-            await esperarSobre();
-            revelar();
         }
 
         async function cargarDatos() {
